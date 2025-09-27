@@ -16,33 +16,43 @@ public class Main {
     private static final String DATABASE_PATH = "Database";
 
     public static void main(String[] args) throws Exception {
+        // Ollama & Ollama4j setup
         OllamaAPI ollamaAPI = new OllamaAPI(HOST);
         ollamaAPI.setVerbose(true);
         ollamaAPI.ping();
         ollamaAPI.pullModel(MODEL);
 
-        StringBuilder messageBuilder = new StringBuilder().append("If neccesary, use any of the following files as context to provide a simple answer to the question at the end.\n");
+        StringBuilder modifiedQueryBuilder = new StringBuilder().append("If neccesary, use any of the following files as context to provide a simple answer to the question at the end.\n\n");
         BufferedReader cliReader = new BufferedReader(new InputStreamReader(System.in));
-        for(String name : new File(DATABASE_PATH).list()) {
-            String path = DATABASE_PATH + "/" + name;
-            long size = new File(path).length();
-            messageBuilder.append(new File(path).getName());
-            messageBuilder.append(":\n");
-            BufferedReader dataReader = new BufferedReader(new FileReader(path));
-            char[] buf = new char[(int) size];
-            dataReader.read(buf);
-            messageBuilder.append(buf);
-            messageBuilder.append("\n\n");
+
+        String[] files = new File(DATABASE_PATH).list();
+        if (files != null) {
+            for (String name : files) {
+                String path = DATABASE_PATH + "/" + name;
+                File file = new File(path);
+                int size = (int) file.length();
+
+                modifiedQueryBuilder.append(file.getName());
+                modifiedQueryBuilder.append(":\n");
+
+                BufferedReader dataReader = new BufferedReader(new FileReader(path));
+                char[] buf = new char[size];
+                dataReader.read(buf);
+                modifiedQueryBuilder.append(buf);
+                modifiedQueryBuilder.append("\n\n");
+            }
         }
-        messageBuilder.append("Question: ");
-        messageBuilder.append(cliReader.readLine());
-        System.out.println(messageBuilder);
+        // Adds user's query to modified Query
+        modifiedQueryBuilder.append("question: ");
+        modifiedQueryBuilder.append(cliReader.readLine());
+        modifiedQueryBuilder.append("\n");
+        System.out.println(modifiedQueryBuilder);
 
-
+        // Send Modified query to Ollama
         List<OllamaChatMessage> messages = new ArrayList<>();
-        messages.add(new OllamaChatMessage(OllamaChatMessageRole.USER, messageBuilder.toString()));
+        messages.add(new OllamaChatMessage(OllamaChatMessageRole.USER, modifiedQueryBuilder.toString()));
         OllamaChatResult chatResult = ollamaAPI.chat(MODEL, messages);
-        System.out.println(
-                "Model answer: " + chatResult.getResponseModel().getMessage().getContent());
+
+        System.out.println(MODEL + ": " + chatResult.getResponseModel().getMessage().getContent());
     }
 }

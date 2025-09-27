@@ -1,0 +1,3 @@
+This is tax document:
+Income: $1 Trillion
+Taxed amount: $400 Billion

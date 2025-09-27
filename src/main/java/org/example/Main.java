@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    private static String HOST = "http://localhost:11434/";
-    private static String MODEL = "tinyllama:latest";
-    private static String DATABASE_PATH = "Database";
+    private static final String HOST = "http://localhost:11434/";
+    private static final String MODEL = "tinyllama:latest";
+    private static final String DATABASE_PATH = "Database";
 
     public static void main(String[] args) throws Exception {
         OllamaAPI ollamaAPI = new OllamaAPI(HOST);
@@ -36,7 +36,7 @@ public class Main {
         }
         messageBuilder.append("Question: ");
         messageBuilder.append(cliReader.readLine());
-        System.out.println(messageBuilder.toString());
+        System.out.println(messageBuilder);
 
 
         List<OllamaChatMessage> messages = new ArrayList<>();
